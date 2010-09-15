@@ -26,6 +26,7 @@
 # See the +has_attached_file+ documentation for more details.
 
 require 'erb'
+require 'digest'
 require 'tempfile'
 require 'paperclip/version'
 require 'paperclip/upfile'
@@ -33,7 +34,6 @@ require 'paperclip/iostream'
 require 'paperclip/geometry'
 require 'paperclip/processor'
 require 'paperclip/thumbnail'
-require 'paperclip/storage'
 require 'paperclip/interpolations'
 require 'paperclip/style'
 require 'paperclip/attachment'
@@ -103,15 +103,6 @@ module Paperclip
       CommandLine.new(cmd, *params).run
     end
 
-    def included base #:nodoc:
-      base.extend ClassMethods
-      if base.respond_to?("set_callback")
-        base.send :include, Paperclip::CallbackCompatability::Rails3
-      else
-        base.send :include, Paperclip::CallbackCompatability::Rails21
-      end
-    end
-
     def processor name #:nodoc:
       name = name.to_s.camelize
       processor = Paperclip.const_get(name)
@@ -147,6 +138,9 @@ module Paperclip
     end
   end
 
+  class StorageMethodNotFound < PaperclipError
+  end
+
   class CommandNotFoundError < PaperclipError
   end
 
@@ -154,6 +148,17 @@ module Paperclip
   end
 
   class InfiniteInterpolationError < PaperclipError #:nodoc:
+  end
+
+  module Glue
+    def self.included base #:nodoc:
+      base.extend ClassMethods
+      if base.respond_to?("set_callback")
+        base.send :include, Paperclip::CallbackCompatability::Rails3
+      else
+        base.send :include, Paperclip::CallbackCompatability::Rails21
+      end
+    end
   end
 
   module ClassMethods
