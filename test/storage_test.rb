@@ -149,6 +149,13 @@ class StorageTest < Test::Unit::TestCase
                       'access_key_id' => "12345",
                       'secret_access_key' => "54321"
                     }
+      Dummy.class_eval do
+         before_avatar_original_s3_upload :do_before_avatar_original_s3_upload
+         after_avatar_original_s3_upload :do_after_avatar_original_s3_upload
+
+         def do_before_avatar_original_s3_upload; end
+         def do_after_avatar_original_s3_upload; end
+       end
     end
 
     should "be extended by the S3 module" do
@@ -177,12 +184,19 @@ class StorageTest < Test::Unit::TestCase
       context "and saved" do
         setup do
           AWS::S3::S3Object.stubs(:store).with(@dummy.avatar.path, anything, 'testing', :content_type => 'image/png', :access => :public_read)
-          @dummy.save
         end
 
         should "succeed" do
+          @dummy.save
           assert true
         end
+
+        should "make s3_upload_callbacks" do
+          @dummy.expects(:do_before_avatar_original_s3_upload).with()
+          @dummy.expects(:do_after_avatar_original_s3_upload).with()
+          @dummy.save
+        end
+
       end
 
       context "and remove" do

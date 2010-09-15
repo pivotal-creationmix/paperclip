@@ -234,6 +234,15 @@ module Paperclip
       after_save :save_attached_files
       before_destroy :destroy_attached_files
 
+      if options[:storage] == :s3
+        define_paperclip_callbacks :"#{name}_original_s3_upload"
+        if options[:styles] != nil
+          options[:styles].keys.map do |style|
+            define_paperclip_callbacks :"#{name}_#{style}_s3_upload" unless style == "original"
+          end
+        end
+      end
+
       define_paperclip_callbacks :post_process, :"#{name}_post_process"
 
       define_method name do |*args|
