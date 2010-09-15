@@ -234,6 +234,15 @@ module Paperclip
       after_save :save_attached_files
       before_destroy :destroy_attached_files
 
+      define_paperclip_callbacks :"#{name}_original_s3_upload"
+
+      # paperclip lets you pass a function for styles.  if you do that you don't get callbacks.
+      if options[:styles].respond_to?(:keys)
+        options[:styles].keys.map do |style|
+          define_paperclip_callbacks :"#{name}_#{style}_s3_upload" unless style == "original"
+        end
+      end
+
       define_paperclip_callbacks :post_process, :"#{name}_post_process"
 
       define_method name do |*args|
