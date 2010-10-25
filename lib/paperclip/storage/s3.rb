@@ -127,14 +127,22 @@ module Paperclip
       # style, in the format most representative of the current storage.
       def to_file style = default_style
         return @queued_for_write[style] if @queued_for_write[style]
-        file = Tempfile.new(path(style))
+        filename = path(style).split(".")
+        extname  = File.extname(filename)
+        basename = File.basename(filename, extname)
+        file = Tempfile.new(basename, extname)
         file.write(AWS::S3::S3Object.value(path(style), bucket_name))
         file.rewind
         return file
       end
 
+      def create_bucket
+        AWS::S3::Bucket.create(bucket_name)
+      end
+
       def flush_writes #:nodoc:
         @queued_for_write.each do |style, file|
+<<<<<<< HEAD
           instance.run_paperclip_callbacks(:"#{name}_#{style}_s3_upload") do
             begin
               log("saving #{path(style)}")
@@ -147,6 +155,21 @@ module Paperclip
             rescue AWS::S3::ResponseError => e
               raise
             end
+=======
+          begin
+            log("saving #{path(style)}")
+            AWS::S3::S3Object.store(path(style),
+                                    file,
+                                    bucket_name,
+                                    {:content_type => instance_read(:content_type),
+                                     :access => @s3_permissions,
+                                    }.merge(@s3_headers))
+          rescue AWS::S3::NoSuchBucket => e
+            create_bucket
+            retry
+          rescue AWS::S3::ResponseError => e
+            raise
+>>>>>>> ef7233d25700a7e69cebd2334b656fa9ca0ae927
           end
         end
         @queued_for_write = {}
