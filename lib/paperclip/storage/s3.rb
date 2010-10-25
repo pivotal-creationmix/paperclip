@@ -103,7 +103,7 @@ module Paperclip
       end
 
       def s3_host_alias
-        @s3_host_alias.sub(/%d/, rand(4).to_s)
+        @s3_host_alias.sub(/%d/, (path.hash % 4).to_s)
       end
 
       def parse_credentials creds
