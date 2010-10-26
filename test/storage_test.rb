@@ -362,6 +362,10 @@ class StorageTest < Test::Unit::TestCase
             @dummy.save
           end
 
+          should "be able to download from S3 and create a tempfile of a single style" do
+            assert_equal Paperclip::Tempfile, @dummy.avatar.to_file(:thumb).class
+          end
+
           should "be on S3" do
             assert true
           end
