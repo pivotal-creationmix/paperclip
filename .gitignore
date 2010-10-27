@@ -7,3 +7,6 @@ paperclip*.gem
 capybara*.html
 .idea
 .DS_Store
+*.rbc
+.bundle
+*SPIKE*
