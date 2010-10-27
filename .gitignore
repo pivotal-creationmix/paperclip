@@ -5,3 +5,5 @@ test/s3.yml
 public
 paperclip*.gem
 capybara*.html
+.idea
+.DS_Store
